@@ -57,9 +57,15 @@ async function placeOrder() {
 
     <template v-else>
       <h1 class="text-5xl font-semibold tracking-tight sm:text-6xl">Checkout</h1>
-      <p class="mt-4 max-w-xl text-muted">This is a mock checkout. No payment is taken and your details aren’t stored.</p>
+      <p class="mt-4 max-w-xl text-muted">
+        This is a mock checkout. No payment is taken and your details aren’t stored.
+      </p>
 
-      <div v-if="!ready || (!quote && !errorMessage)" class="mt-10 h-48 animate-pulse rounded-xl bg-rule/50" aria-label="Loading your order" />
+      <div
+        v-if="!ready || (!quote && !errorMessage)"
+        class="mt-10 h-48 animate-pulse rounded-xl bg-rule/50"
+        aria-label="Loading your order"
+      />
 
       <div v-else-if="quote && !quote.lines.length" class="mt-10 rounded-xl border border-rule p-10 text-center">
         <p class="text-lg">Your cart is empty, so there’s nothing to check out yet.</p>
@@ -70,15 +76,22 @@ async function placeOrder() {
         <form class="max-w-xl space-y-5" @submit.prevent="placeOrder">
           <label class="block">
             <span class="text-sm font-medium">Full name</span>
-            <input v-model="form.name" class="field" type="text" name="name" autocomplete="name" required>
+            <input v-model="form.name" class="field" type="text" name="name" autocomplete="name" required />
           </label>
           <label class="block">
             <span class="text-sm font-medium">Email</span>
-            <input v-model="form.email" class="field" type="email" name="email" autocomplete="email" required>
+            <input v-model="form.email" class="field" type="email" name="email" autocomplete="email" required />
           </label>
           <label class="block">
             <span class="text-sm font-medium">Shipping address</span>
-            <textarea v-model="form.address" class="field" name="address" rows="3" autocomplete="street-address" required />
+            <textarea
+              v-model="form.address"
+              class="field"
+              name="address"
+              rows="3"
+              autocomplete="street-address"
+              required
+            />
           </label>
           <p v-if="errorMessage" class="rounded-lg bg-rule/50 p-4 text-sm" role="alert">{{ errorMessage }}</p>
           <button type="submit" class="btn w-full sm:w-auto" :disabled="submitting || !quote">

@@ -1,0 +1,7 @@
+.nuxt
+.output
+.vercel
+backend
+public
+package-lock.json
+*.md

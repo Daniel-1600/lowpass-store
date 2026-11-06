@@ -25,12 +25,7 @@ const sorted = computed(() => {
       </label>
     </div>
     <div class="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
-      <ProductCard
-        v-for="(product, index) in sorted"
-        :key="product.slug"
-        :product="product"
-        :priority="index < 2"
-      />
+      <ProductCard v-for="(product, index) in sorted" :key="product.slug" :product="product" :priority="index < 2" />
     </div>
   </div>
 </template>

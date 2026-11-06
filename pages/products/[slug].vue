@@ -74,7 +74,9 @@ function addToCart() {
   quantity.value = 1
   added.value = true
   clearTimeout(addedTimer)
-  addedTimer = setTimeout(() => { added.value = false }, 2500)
+  addedTimer = setTimeout(() => {
+    added.value = false
+  }, 2500)
 }
 onBeforeUnmount(() => clearTimeout(addedTimer))
 </script>
@@ -85,7 +87,11 @@ onBeforeUnmount(() => clearTimeout(addedTimer))
       <ol class="flex flex-wrap gap-2">
         <li><NuxtLink to="/" class="hover:text-ink hover:underline">Home</NuxtLink></li>
         <li aria-hidden="true">/</li>
-        <li><NuxtLink :to="`/category/${p.categorySlug}`" class="hover:text-ink hover:underline">{{ p.categoryName }}</NuxtLink></li>
+        <li>
+          <NuxtLink :to="`/category/${p.categorySlug}`" class="hover:text-ink hover:underline">{{
+            p.categoryName
+          }}</NuxtLink>
+        </li>
         <li aria-hidden="true">/</li>
         <li aria-current="page" class="text-ink">{{ p.name }}</li>
       </ol>
@@ -123,7 +129,11 @@ onBeforeUnmount(() => clearTimeout(addedTimer))
         <form v-if="inStock" class="mt-6 flex flex-wrap items-end gap-3" @submit.prevent="addToCart">
           <label class="text-sm">
             <span class="eyebrow block">Quantity</span>
-            <select v-model.number="quantity" class="mt-1.5 min-h-12 rounded-lg border border-rule bg-white px-3" :disabled="remaining === 0">
+            <select
+              v-model.number="quantity"
+              class="mt-1.5 min-h-12 rounded-lg border border-rule bg-white px-3"
+              :disabled="remaining === 0"
+            >
               <option v-for="n in Math.min(Math.max(remaining, 1), 10)" :key="n" :value="n">{{ n }}</option>
             </select>
           </label>
@@ -132,10 +142,14 @@ onBeforeUnmount(() => clearTimeout(addedTimer))
           </button>
         </form>
         <p v-else class="mt-6 rounded-lg bg-rule/50 p-4 text-sm">
-          This one is sold out right now. Take a look at the rest of our <NuxtLink :to="`/category/${p.categorySlug}`" class="underline">{{ p.categoryName.toLowerCase() }}</NuxtLink>.
+          This one is sold out right now. Take a look at the rest of our
+          <NuxtLink :to="`/category/${p.categorySlug}`" class="underline">{{ p.categoryName.toLowerCase() }}</NuxtLink
+          >.
         </p>
         <p class="mt-3 min-h-6 text-sm" role="status">
-          <template v-if="added">Added to your cart. <NuxtLink to="/cart" class="font-medium underline">View cart</NuxtLink></template>
+          <template v-if="added"
+            >Added to your cart. <NuxtLink to="/cart" class="font-medium underline">View cart</NuxtLink></template
+          >
         </p>
 
         <div class="mt-6 max-w-prose leading-relaxed">{{ p.description }}</div>
@@ -143,7 +157,11 @@ onBeforeUnmount(() => clearTimeout(addedTimer))
         <section class="mt-10" aria-labelledby="specs-heading">
           <h2 id="specs-heading" class="eyebrow">Specifications</h2>
           <dl class="mt-3 border-t border-rule">
-            <div v-for="(value, label) in p.specs" :key="label" class="grid grid-cols-[2fr_3fr] gap-4 border-b border-rule py-3 text-sm">
+            <div
+              v-for="(value, label) in p.specs"
+              :key="label"
+              class="grid grid-cols-[2fr_3fr] gap-4 border-b border-rule py-3 text-sm"
+            >
               <dt class="text-muted">{{ label }}</dt>
               <dd class="font-mono text-[0.8125rem]">{{ value }}</dd>
             </div>
@@ -153,7 +171,9 @@ onBeforeUnmount(() => clearTimeout(addedTimer))
     </div>
 
     <section v-if="related.length" class="mt-24" aria-labelledby="related-heading">
-      <h2 id="related-heading" class="mb-8 text-3xl font-semibold tracking-tight">More {{ p.categoryName.toLowerCase() }}</h2>
+      <h2 id="related-heading" class="mb-8 text-3xl font-semibold tracking-tight">
+        More {{ p.categoryName.toLowerCase() }}
+      </h2>
       <div class="grid grid-cols-2 gap-x-4 gap-y-10 lg:gap-x-6">
         <ProductCard v-for="item in related" :key="item.slug" :product="item" />
       </div>

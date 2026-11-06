@@ -2,11 +2,12 @@
 //   npm run test:seo -- https://your-site.example   (defaults to http://localhost:3000)
 const base = (process.argv[2] ?? 'http://localhost:3000').replace(/\/$/, '')
 const failures = []
-const check = (ok, message) => { if (!ok) failures.push(message) }
+const check = (ok, message) => {
+  if (!ok) failures.push(message)
+}
 
 const attr = (html, pattern) => html.match(pattern)?.[1]
-const meta = (html, key) =>
-  attr(html, new RegExp(`<meta[^>]*(?:name|property)="${key}"[^>]*content="([^"]*)"`))
+const meta = (html, key) => attr(html, new RegExp(`<meta[^>]*(?:name|property)="${key}"[^>]*content="([^"]*)"`))
 
 const sitemap = await (await fetch(`${base}/sitemap.xml`)).text()
 const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
@@ -31,8 +32,9 @@ for (const loc of locs) {
   seenTitles.set(title, path)
   seenDescriptions.set(description, path)
 
-  const canonical = attr(html, /<link[^>]*rel="canonical"[^>]*href="([^"]*)"/)
-    ?? attr(html, /<link[^>]*href="([^"]*)"[^>]*rel="canonical"/)
+  const canonical =
+    attr(html, /<link[^>]*rel="canonical"[^>]*href="([^"]*)"/) ??
+    attr(html, /<link[^>]*href="([^"]*)"[^>]*rel="canonical"/)
   check(canonical === loc, where(`canonical ${canonical} differs from sitemap ${loc}`))
   for (const key of ['og:title', 'og:description', 'og:type', 'og:url', 'og:image', 'twitter:card']) {
     check(meta(html, key), where(`missing ${key}`))
@@ -45,15 +47,24 @@ for (const loc of locs) {
     check(image.ok, where(`og:image returned ${image.status}`))
   }
 
-  const jsonLd = [...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)]
-    .map((m) => JSON.parse(m[1]))
+  const jsonLd = [...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)].map((m) =>
+    JSON.parse(m[1]),
+  )
   if (path.startsWith('/products/')) {
     const product = jsonLd.find((d) => d['@type'] === 'Product')
-    check(product?.name && product?.image && product?.offers?.price && product?.offers?.availability,
-      where('incomplete Product JSON-LD'))
-    check(jsonLd.some((d) => d['@type'] === 'BreadcrumbList'), where('missing BreadcrumbList JSON-LD'))
+    check(
+      product?.name && product?.image && product?.offers?.price && product?.offers?.availability,
+      where('incomplete Product JSON-LD'),
+    )
+    check(
+      jsonLd.some((d) => d['@type'] === 'BreadcrumbList'),
+      where('missing BreadcrumbList JSON-LD'),
+    )
     check(html.includes(product?.name), where('Product name is not in the HTML'))
-    check(meta(html, 'product:price:amount') === product?.offers?.price, where('product:price:amount differs from the schema price'))
+    check(
+      meta(html, 'product:price:amount') === product?.offers?.price,
+      where('product:price:amount differs from the schema price'),
+    )
   }
 }
 

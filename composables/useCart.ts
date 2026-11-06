@@ -39,9 +39,10 @@ export function useCart() {
   }
 
   function setQuantity(slug: string, quantity: number) {
-    items.value = quantity > 0
-      ? items.value.map((i) => (i.slug === slug ? { ...i, quantity } : i))
-      : items.value.filter((i) => i.slug !== slug)
+    items.value =
+      quantity > 0
+        ? items.value.map((i) => (i.slug === slug ? { ...i, quantity } : i))
+        : items.value.filter((i) => i.slug !== slug)
     persist()
   }
 

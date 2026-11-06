@@ -40,7 +40,7 @@ usePageSeo({
     <section class="wrap grid items-center gap-8 pb-16 pt-10 md:grid-cols-2 md:pt-14 lg:gap-16">
       <div>
         <h1 class="text-[clamp(3rem,8vw,6.5rem)] font-semibold leading-[0.95] tracking-[-0.04em]">
-          Good sound,<br>small desk.
+          Good sound,<br />small desk.
         </h1>
         <p class="mt-6 max-w-md text-lg leading-relaxed text-muted">
           Headphones, speakers and desk gear with real dials, replaceable parts and specs written in plain English.
@@ -50,7 +50,11 @@ usePageSeo({
           <NuxtLink to="/products/room-radio" class="btn-outline">See the Room Radio</NuxtLink>
         </div>
       </div>
-      <NuxtLink to="/products/room-radio" class="block aspect-square overflow-hidden rounded-2xl bg-rule" aria-label="Room Radio, $179">
+      <NuxtLink
+        to="/products/room-radio"
+        class="block aspect-square overflow-hidden rounded-2xl bg-rule"
+        aria-label="Room Radio, $179"
+      >
         <NuxtPicture
           src="/images/products/room-radio.webp"
           alt="Room Radio portable radio in signal orange with a carry handle and tuning dial"
@@ -68,7 +72,11 @@ usePageSeo({
 
     <section class="border-y border-rule">
       <ul class="wrap grid grid-cols-2 lg:grid-cols-4">
-        <li v-for="category in categories" :key="category.slug" class="border-rule py-6 max-lg:even:border-l max-lg:even:pl-4 lg:border-l lg:px-6 lg:first:border-l-0 lg:first:pl-0">
+        <li
+          v-for="category in categories"
+          :key="category.slug"
+          class="border-rule py-6 max-lg:even:border-l max-lg:even:pl-4 lg:border-l lg:px-6 lg:first:border-l-0 lg:first:pl-0"
+        >
           <NuxtLink :to="`/category/${category.slug}`" class="group flex items-center gap-4">
             <NuxtImg
               :src="categoryImages[category.slug]?.src"
@@ -91,7 +99,9 @@ usePageSeo({
     <section class="wrap pt-16" aria-labelledby="featured-heading">
       <div class="mb-8 flex items-end justify-between gap-4">
         <h2 id="featured-heading" class="text-3xl font-semibold tracking-tight sm:text-4xl">On our own desks</h2>
-        <NuxtLink to="/products" class="text-sm font-medium underline underline-offset-4 hover:text-signal-strong">View all</NuxtLink>
+        <NuxtLink to="/products" class="text-sm font-medium underline underline-offset-4 hover:text-signal-strong"
+          >View all</NuxtLink
+        >
       </div>
       <div class="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:gap-x-6">
         <ProductCard v-for="product in featured" :key="product.slug" :product="product" />
