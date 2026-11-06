@@ -71,13 +71,19 @@ function headphones(body, cupDetail) {
 }
 
 const art = {
-  'arc-one': { bg: SAND, svg: () => headphones('ink', (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="26" fill="${ORANGE}"/>`) },
+  'arc-one': {
+    bg: SAND,
+    svg: () => headphones('ink', (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="26" fill="${ORANGE}"/>`),
+  },
   'arc-studio': {
     bg: SAGE,
     svg: () =>
-      headphones('moss', (cx, cy) => `
+      headphones(
+        'moss',
+        (cx, cy) => `
         <rect x="${cx - 60}" y="${cy - 165}" width="120" height="330" rx="58" fill="url(#metal)"/>
-        ${dots(cx - 50, cy - 150, 100, 300, 21, 6.5, '#26272A', (x, y) => Math.abs(y - cy) < 148 && Math.abs(x - cx) < 48)}`),
+        ${dots(cx - 50, cy - 150, 100, 300, 21, 6.5, '#26272A', (x, y) => Math.abs(y - cy) < 148 && Math.abs(x - cx) < 48)}`,
+      ),
   },
   'pebble-buds': {
     bg: CLAY,
@@ -241,7 +247,12 @@ const productSvg = (name, size = SIZE) => {
 }
 
 // Open Graph cards are 1200x630, with the product's art filling the frame's height.
-const ogSvg = (bg, title, sub, productPng) => `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630">
+const ogSvg = (
+  bg,
+  title,
+  sub,
+  productPng,
+) => `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630">
   <rect width="1200" height="630" fill="#16171A"/>
   ${productPng ? `<image x="570" y="0" width="630" height="630" xlink:href="data:image/png;base64,${productPng}"/>` : ''}
   <text x="64" y="104" font-family="sans-serif" font-size="30" font-weight="700" fill="${ORANGE}" letter-spacing="1">LOWPASS</text>
@@ -270,15 +281,23 @@ await mkdir(`${OUT}og`, { recursive: true })
 for (const name of Object.keys(art)) {
   const svg = Buffer.from(productSvg(name))
   await sharp(svg).webp({ quality: 88 }).toFile(`${OUT}products/${name}.webp`)
-  const thumb = await sharp(Buffer.from(productSvg(name, 630))).png().toBuffer()
+  const thumb = await sharp(Buffer.from(productSvg(name, 630)))
+    .png()
+    .toBuffer()
   const [title, sub] = ogCopy[name]
   await sharp(Buffer.from(ogSvg(art[name].bg, [title], sub, thumb.toString('base64'))))
     .jpeg({ quality: 84, mozjpeg: true })
     .toFile(`${OUT}og/${name}.jpg`)
 }
 
-const heroThumb = await sharp(Buffer.from(productSvg('room-radio', 630))).png().toBuffer()
-await sharp(Buffer.from(ogSvg(CLAY, ['Good sound,', 'small desk.'], 'Headphones, speakers and desk gear', heroThumb.toString('base64'))))
+const heroThumb = await sharp(Buffer.from(productSvg('room-radio', 630)))
+  .png()
+  .toBuffer()
+await sharp(
+  Buffer.from(
+    ogSvg(CLAY, ['Good sound,', 'small desk.'], 'Headphones, speakers and desk gear', heroThumb.toString('base64')),
+  ),
+)
   .jpeg({ quality: 84, mozjpeg: true })
   .toFile(`${OUT}og/default.jpg`)
 

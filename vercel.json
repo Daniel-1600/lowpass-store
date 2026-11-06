@@ -1,0 +1,15 @@
+{
+  "services": {
+    "frontend": {
+      "root": ".",
+      "framework": "nuxtjs",
+      "buildCommand": "command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh; PATH=\"$HOME/.local/bin:$PATH\" npm run build",
+      "bindings": [{ "type": "service", "service": "backend", "format": "url", "env": "NUXT_API_BASE" }]
+    },
+    "backend": {
+      "root": "backend",
+      "entrypoint": "main:app"
+    }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": { "service": "frontend" } }]
+}

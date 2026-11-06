@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { Category, ProductSummary } from '~~/types/store'
 const slug = useRoute().params.slug as string
 const [{ data: categories }, { data: products }] = await Promise.all([
-  useFetch('/api/categories', { key: 'nav-categories' }),
-  useFetch('/api/products', { query: { category: slug } }),
+  useFetch<Category[]>('/api/categories', { key: 'nav-categories' }),
+  useFetch<ProductSummary[]>('/api/products', { query: { category: slug } }),
 ])
 
 const found = categories.value?.find((c) => c.slug === slug)

@@ -19,7 +19,11 @@ withDefaults(defineProps<{ product: ProductSummary; priority?: boolean }>(), { p
         :preload="priority"
         :img-attrs="{ class: 'h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]' }"
       />
-      <span v-if="product.stock === 0" class="absolute left-3 top-3 rounded-full bg-ink px-3 py-1 font-mono text-xs text-paper">Sold out</span>
+      <span
+        v-if="product.stock === 0"
+        class="absolute left-3 top-3 rounded-full bg-ink px-3 py-1 font-mono text-xs text-paper"
+        >Sold out</span
+      >
     </div>
     <div class="mt-3 flex items-start justify-between gap-3">
       <h3 class="font-semibold">

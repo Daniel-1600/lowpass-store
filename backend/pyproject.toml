@@ -1,0 +1,21 @@
+[project]
+name = "lowpass-backend"
+version = "0.1.0"
+description = "Catalogue, cart pricing and mock checkout API for the Lowpass store"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.32",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.8"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"seed.py" = ["E501"]
