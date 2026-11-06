@@ -47,6 +47,14 @@ for (const loc of locs) {
     check(image.ok, where(`og:image returned ${image.status}`))
   }
 
+  // Images only break on the real host, so this also catches a misconfigured image optimiser.
+  const imageUrl = attr(html, /<img[^>]*\ssrc="([^"]+)"/)?.replace(/&amp;/g, '&')
+  check(imageUrl, where('has no <img>'))
+  if (imageUrl) {
+    const image = await fetch(new URL(imageUrl, base))
+    check(image.ok, where(`image ${imageUrl} returned ${image.status}`))
+  }
+
   const jsonLd = [...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)].map((m) =>
     JSON.parse(m[1]),
   )
