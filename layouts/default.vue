@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { data: categories } = await useFetch('/api/categories', { key: 'nav-categories' })
+import type { Category } from '~~/types/store'
+const { data: categories } = await useFetch<Category[]>('/api/categories', { key: 'nav-categories' })
 const { count, ready, load } = useCart()
 onMounted(load)
 

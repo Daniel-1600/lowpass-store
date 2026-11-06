@@ -10,6 +10,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
+    // Overridden at runtime by NUXT_API_BASE. See vercel.json.
+    apiBase: 'http://127.0.0.1:8000',
     public: { siteUrl },
   },
 

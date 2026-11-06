@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { data: categories } = await useFetch('/api/categories', { key: 'nav-categories' })
+import type { Category } from '~~/types/store'
+const { data: categories } = await useFetch<Category[]>('/api/categories', { key: 'nav-categories' })
 const linkClass = 'whitespace-nowrap rounded-full border border-rule px-4 py-2 text-sm hover:border-ink'
 const activeClass = '!border-ink bg-ink text-paper'
 </script>

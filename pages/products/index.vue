@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { data: products } = await useFetch('/api/products')
+import type { ProductSummary } from '~~/types/store'
+const { data: products } = await useFetch<ProductSummary[]>('/api/products')
 
 usePageSeo({
   title: 'All Products',

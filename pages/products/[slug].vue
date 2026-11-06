@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import type { Product, ProductSummary } from '~~/types/store'
 const slug = useRoute().params.slug as string
 const site = useRuntimeConfig().public.siteUrl
-const { data: product, error } = await useFetch(`/api/products/${slug}`)
+const { data: product, error } = await useFetch<Product>(`/api/products/${slug}`)
 if (error.value || !product.value) {
   throw createError({ statusCode: 404, statusMessage: 'Product not found', fatal: true })
 }
 const p = product.value
 
-const { data: allInCategory } = await useFetch('/api/products', { query: { category: p.categorySlug } })
+const { data: allInCategory } = await useFetch<ProductSummary[]>('/api/products', {
+  query: { category: p.categorySlug },
+})
 const related = computed(() => allInCategory.value?.filter((item) => item.slug !== slug).slice(0, 2) ?? [])
 
 const inStock = p.stock > 0

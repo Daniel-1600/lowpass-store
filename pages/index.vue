@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { Category, ProductSummary } from '~~/types/store'
 const site = useRuntimeConfig().public.siteUrl
 const [{ data: featured }, { data: categories }] = await Promise.all([
-  useFetch('/api/products', { query: { featured: 'true' } }),
-  useFetch('/api/categories', { key: 'nav-categories' }),
+  useFetch<ProductSummary[]>('/api/products', { query: { featured: 'true' } }),
+  useFetch<Category[]>('/api/categories', { key: 'nav-categories' }),
 ])
 
 const categoryImages: Record<string, { src: string; alt: string }> = {

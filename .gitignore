@@ -5,3 +5,5 @@ node_modules
 .vercel
 .env
 *.log
+.venv
+__pycache__

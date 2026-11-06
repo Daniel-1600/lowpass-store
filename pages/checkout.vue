@@ -34,7 +34,7 @@ async function placeOrder() {
     })
     clear()
   } catch (error) {
-    const message = (error as { statusMessage?: string }).statusMessage
+    const message = (error as { data?: { statusMessage?: string } }).data?.statusMessage
     errorMessage.value = message || 'Something went wrong placing your order. Please try again.'
   } finally {
     submitting.value = false
