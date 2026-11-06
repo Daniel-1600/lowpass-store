@@ -4,10 +4,7 @@ const STORAGE_KEY = 'lowpass-cart'
 
 function readStoredCart(): CartItem[] {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
-    return Array.isArray(parsed)
-      ? parsed.filter((i) => typeof i?.slug === 'string' && Number.isInteger(i?.quantity) && i.quantity > 0)
-      : []
+    return normalizeCart(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'))
   } catch {
     return []
   }
@@ -36,9 +33,15 @@ export function useCart() {
     if (ready.value) return
     items.value = readStoredCart()
     ready.value = true
+    persist() // Saves any clean-up, such as combined duplicates.
+    // Fires only for changes made in other tabs. `load` runs once, so this is added once.
+    window.addEventListener('storage', (event) => {
+      if (event.key === STORAGE_KEY || event.key === null) items.value = readStoredCart()
+    })
   }
 
   function setQuantity(slug: string, quantity: number) {
+    if (!Number.isSafeInteger(quantity)) return
     items.value =
       quantity > 0
         ? items.value.map((i) => (i.slug === slug ? { ...i, quantity } : i))
@@ -46,14 +49,17 @@ export function useCart() {
     persist()
   }
 
+  /** Returns false if the cart has no room for another product. */
   function add(slug: string, quantity = 1, max = Number.POSITIVE_INFINITY) {
     const existing = items.value.find((i) => i.slug === slug)
     if (existing) {
       setQuantity(slug, Math.min(existing.quantity + quantity, max))
-    } else {
-      items.value = [...items.value, { slug, quantity: Math.min(quantity, max) }]
-      persist()
+      return true
     }
+    if (items.value.length >= MAX_CART_LINES) return false
+    items.value = [...items.value, { slug, quantity: Math.min(quantity, max) }]
+    persist()
+    return true
   }
 
   function clear() {

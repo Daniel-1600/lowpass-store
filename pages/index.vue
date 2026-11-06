@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { Category, ProductSummary } from '~~/types/store'
 const site = useRuntimeConfig().public.siteUrl
-const [{ data: featured }, { data: categories }] = await Promise.all([
+const [{ data: featured, error, status, refresh }, { data: categories }] = await Promise.all([
   useFetch<ProductSummary[]>('/api/products', { query: { featured: 'true' } }),
   useFetch<Category[]>('/api/categories', { key: 'nav-categories' }),
 ])
+if (import.meta.server && error.value) throw catalogueOutage()
 
 const categoryImages: Record<string, { src: string; alt: string }> = {
   headphones: { src: '/images/products/arc-studio.webp', alt: 'Arc Studio headphones' },
@@ -104,9 +105,10 @@ usePageSeo({
           >View all</NuxtLink
         >
       </div>
-      <div class="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:gap-x-6">
+      <div v-if="featured?.length" class="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:gap-x-6">
         <ProductCard v-for="product in featured" :key="product.slug" :product="product" />
       </div>
+      <FetchState v-else :status="status" empty-message="Nothing is featured right now." @retry="refresh()" />
     </section>
   </div>
 </template>

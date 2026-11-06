@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { Category, ProductSummary } from '~~/types/store'
 const slug = useRoute().params.slug as string
-const [{ data: categories }, { data: products }] = await Promise.all([
+const [{ data: categories, error: categoriesError }, { data: products, error, status, refresh }] = await Promise.all([
   useFetch<Category[]>('/api/categories', { key: 'nav-categories' }),
   useFetch<ProductSummary[]>('/api/products', { query: { category: slug } }),
 ])
 
 const found = categories.value?.find((c) => c.slug === slug)
+if (!found && categoriesError.value) throw catalogueOutage()
+if (import.meta.server && error.value) throw catalogueOutage()
 if (!found) {
   throw createError({ statusCode: 404, statusMessage: 'Category not found', fatal: true })
 }
@@ -32,6 +34,13 @@ usePageSeo({
     <h1 class="text-5xl font-semibold tracking-tight sm:text-6xl">{{ category.name }}</h1>
     <p class="mt-4 max-w-xl text-lg leading-relaxed text-muted">{{ category.description }}</p>
     <CategoryTabs class="mt-8" />
-    <ProductListing v-if="products" :products="products" class="mt-6" />
+    <ProductListing v-if="products?.length" :products="products" class="mt-6" />
+    <FetchState
+      v-else
+      :status="status"
+      empty-message="There’s nothing in this category right now."
+      class="mt-6"
+      @retry="refresh()"
+    />
   </div>
 </template>

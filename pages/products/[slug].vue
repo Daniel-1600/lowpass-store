@@ -3,9 +3,10 @@ import type { Product, ProductSummary } from '~~/types/store'
 const slug = useRoute().params.slug as string
 const site = useRuntimeConfig().public.siteUrl
 const { data: product, error } = await useFetch<Product>(`/api/products/${slug}`)
-if (error.value || !product.value) {
+if (error.value?.statusCode === 404) {
   throw createError({ statusCode: 404, statusMessage: 'Product not found', fatal: true })
 }
+if (!product.value) throw catalogueOutage()
 const p = product.value
 
 const { data: allInCategory } = await useFetch<ProductSummary[]>('/api/products', {
@@ -67,13 +68,18 @@ useHead({
 const { add, items } = useCart()
 const quantity = ref(1)
 const added = ref(false)
+const cartFull = ref(false)
 let addedTimer: ReturnType<typeof setTimeout> | undefined
 
 const inCart = computed(() => items.value.find((item) => item.slug === slug)?.quantity ?? 0)
 const remaining = computed(() => Math.max(p.stock - inCart.value, 0))
 
 function addToCart() {
-  add(slug, quantity.value, p.stock)
+  cartFull.value = !add(slug, quantity.value, p.stock)
+  if (cartFull.value) {
+    added.value = false
+    return
+  }
   quantity.value = 1
   added.value = true
   clearTimeout(addedTimer)
@@ -152,6 +158,10 @@ onBeforeUnmount(() => clearTimeout(addedTimer))
         <p class="mt-3 min-h-6 text-sm" role="status">
           <template v-if="added"
             >Added to your cart. <NuxtLink to="/cart" class="font-medium underline">View cart</NuxtLink></template
+          >
+          <template v-else-if="cartFull"
+            >Your cart is full. <NuxtLink to="/cart" class="font-medium underline">Remove something</NuxtLink> to add
+            this.</template
           >
         </p>
 

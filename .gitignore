@@ -7,3 +7,5 @@ node_modules
 *.log
 .venv
 __pycache__
+playwright-report
+test-results

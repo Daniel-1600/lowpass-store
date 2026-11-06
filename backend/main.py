@@ -16,6 +16,14 @@ EMAIL = re.compile(r"[^\s@]+@[^\s@]+\.[^\s@]+")
 app = FastAPI(title="Lowpass API", redirect_slashes=False)
 
 
+class OrderChanged(HTTPException):
+    """The order can't be completed as reviewed. Carries the updated quote for the shopper."""
+
+    def __init__(self, message: str, quote: dict) -> None:
+        super().__init__(409, message)
+        self.quote = quote
+
+
 def _site_url() -> str:
     vercel_url = os.getenv("VERCEL_PROJECT_PRODUCTION_URL") or os.getenv("VERCEL_URL")
     fallback = f"https://{vercel_url}" if vercel_url else "http://localhost:3000"
@@ -26,16 +34,16 @@ def _site_url() -> str:
 async def error_response(request: Request, exc: StarletteHTTPException) -> JSONResponse:
     # The frontend reads statusMessage from this body. Custom HTTP reason phrases aren't an
     # option: ASGI servers can't send them and HTTP/2 doesn't have them.
-    return JSONResponse(
-        {
-            "error": True,
-            "url": request.url.path,
-            "statusCode": exc.status_code,
-            "statusMessage": exc.detail,
-            "message": exc.detail,
-        },
-        status_code=exc.status_code,
-    )
+    body = {
+        "error": True,
+        "url": request.url.path,
+        "statusCode": exc.status_code,
+        "statusMessage": exc.detail,
+        "message": exc.detail,
+    }
+    if isinstance(exc, OrderChanged):
+        body["data"] = {"quote": exc.quote}
+    return JSONResponse(body, status_code=exc.status_code)
 
 
 async def _read_json(request: Request) -> dict:
@@ -84,6 +92,7 @@ async def cart_quote(request: Request) -> dict:
 
 
 # Mock checkout: validates and re-prices the order but takes no payment and stores nothing.
+# It only completes the exact order the shopper reviewed, identified by the quote's fingerprint.
 @app.post("/api/checkout")
 async def checkout(request: Request) -> dict:
     body = await _read_json(request)
@@ -100,7 +109,9 @@ async def checkout(request: Request) -> dict:
 
     quote = build_quote(parse_cart_items(body.get("items")))
     if not quote["lines"]:
-        raise HTTPException(409, "Your cart has no items available to buy")
+        raise OrderChanged("Your cart has no items available to buy", quote)
+    if quote["changes"] or body.get("reviewedFingerprint") != quote["fingerprint"]:
+        raise OrderChanged("Your order has changed. Please review the update.", quote)
 
     return {
         "orderNumber": f"LP-{secrets.token_hex(4).upper()}",

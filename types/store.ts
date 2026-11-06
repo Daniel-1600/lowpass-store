@@ -34,11 +34,21 @@ export interface QuoteLine extends ProductSummary {
   lineTotalCents: number
 }
 
+export interface QuoteChange {
+  slug: string
+  name: string | null
+  reason: 'unavailable' | 'sold_out' | 'reduced'
+  requestedQuantity: number
+  availableQuantity: number
+}
+
 export interface Quote {
   lines: QuoteLine[]
+  changes: QuoteChange[]
   subtotalCents: number
   shippingCents: number
   totalCents: number
+  fingerprint: string
 }
 
 export interface OrderConfirmation {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Quote } from '~~/types/store'
+import type { Quote, QuoteChange } from '~~/types/store'
 
 usePageSeo({
   title: 'Your Cart',
@@ -11,29 +11,33 @@ usePageSeo({
 const { items, ready, setQuantity, load } = useCart()
 const quote = ref<Quote | null>(null)
 const failed = ref(false)
-const cartChanged = ref(false)
+const changes = ref<QuoteChange[]>([])
 
 // A sequence number discards responses that arrive after a newer request was sent.
 let latestRequest = 0
 async function refresh() {
   const request = ++latestRequest
+  failed.value = false
   try {
     const result = await $fetch<Quote>('/api/cart/quote', { method: 'POST', body: { items: items.value } })
     if (request !== latestRequest) return
     quote.value = result
-    failed.value = false
+    // Keep the list after the cart below is corrected, which triggers a clean quote.
+    if (result.changes.length) changes.value = result.changes
     // Bring the stored cart in line with what the server can actually sell.
     const sellable = new Map(result.lines.map((line) => [line.slug, line.quantity]))
     for (const item of items.value) {
       const quantity = sellable.get(item.slug) ?? 0
-      if (quantity !== item.quantity) {
-        cartChanged.value = true
-        setQuantity(item.slug, quantity)
-      }
+      if (quantity !== item.quantity) setQuantity(item.slug, quantity)
     }
   } catch {
     if (request === latestRequest) failed.value = true
   }
+}
+
+function updateQuantity(slug: string, quantity: number) {
+  changes.value = []
+  setQuantity(slug, quantity)
 }
 
 onMounted(() => {
@@ -45,6 +49,11 @@ onMounted(() => {
 <template>
   <div class="wrap pt-10">
     <h1 class="text-5xl font-semibold tracking-tight sm:text-6xl">Your cart</h1>
+
+    <div v-if="changes.length" class="mt-8 rounded-lg bg-rule/50 p-4" role="status">
+      <p class="mb-1 text-sm font-medium">We updated your cart to match what we have available.</p>
+      <CartChanges :changes="changes" />
+    </div>
 
     <p v-if="failed" class="mt-8 rounded-lg bg-rule/50 p-4" role="alert">
       We couldn’t load your cart prices.
@@ -64,9 +73,6 @@ onMounted(() => {
 
     <div v-else class="mt-10 grid gap-10 lg:grid-cols-[2fr_1fr] lg:gap-16">
       <div>
-        <p v-if="cartChanged" class="mb-4 rounded-lg bg-rule/50 p-4 text-sm" role="status">
-          We updated your cart to match the stock we have available.
-        </p>
         <ul class="border-t border-rule">
           <li
             v-for="line in quote.lines"
@@ -93,7 +99,7 @@ onMounted(() => {
                   <select
                     :value="line.quantity"
                     class="min-h-11 rounded-lg border border-rule bg-white px-2"
-                    @change="setQuantity(line.slug, Number(($event.target as HTMLSelectElement).value))"
+                    @change="updateQuantity(line.slug, Number(($event.target as HTMLSelectElement).value))"
                   >
                     <option v-for="n in Math.min(line.stock, Math.max(10, line.quantity))" :key="n" :value="n">
                       {{ n }}
@@ -104,7 +110,7 @@ onMounted(() => {
                   type="button"
                   class="min-h-11 text-sm underline underline-offset-4 hover:text-signal-strong"
                   :aria-label="`Remove ${line.name}`"
-                  @click="setQuantity(line.slug, 0)"
+                  @click="updateQuantity(line.slug, 0)"
                 >
                   Remove
                 </button>

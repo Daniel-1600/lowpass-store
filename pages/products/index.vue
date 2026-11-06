@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ProductSummary } from '~~/types/store'
-const { data: products } = await useFetch<ProductSummary[]>('/api/products')
+const { data: products, error, status, refresh } = await useFetch<ProductSummary[]>('/api/products')
+if (import.meta.server && error.value) throw catalogueOutage()
 
 usePageSeo({
   title: 'All Products',
@@ -24,6 +25,13 @@ usePageSeo({
       The whole catalogue. Twelve things we like enough to put our name on.
     </p>
     <CategoryTabs class="mt-8" />
-    <ProductListing v-if="products" :products="products" class="mt-6" />
+    <ProductListing v-if="products?.length" :products="products" class="mt-6" />
+    <FetchState
+      v-else
+      :status="status"
+      empty-message="There’s nothing in the catalogue right now."
+      class="mt-6"
+      @retry="refresh()"
+    />
   </div>
 </template>

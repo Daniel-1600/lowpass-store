@@ -5,3 +5,5 @@ backend
 public
 package-lock.json
 *.md
+playwright-report
+test-results

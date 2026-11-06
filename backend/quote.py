@@ -1,3 +1,6 @@
+import hashlib
+import json
+
 from fastapi import HTTPException
 
 from db import get_product
@@ -34,17 +37,41 @@ def parse_cart_items(data: object) -> list[dict]:
     return items
 
 
+def _fingerprint(lines: list[dict], shipping: int) -> str:
+    """Identifies what the shopper is agreeing to buy, so checkout can spot any change."""
+    order = sorted((line["slug"], line["quantity"], line["priceCents"]) for line in lines)
+    return hashlib.sha256(json.dumps([order, shipping]).encode()).hexdigest()
+
+
 def build_quote(items: list[dict]) -> dict:
     """
     Prices the cart from the database so the client's numbers are never trusted.
-    Products that no longer exist or are sold out are dropped, and quantities are capped to stock.
+    Repeated products are combined before quantities are capped to stock. Anything that can't be
+    sold as requested is left out or reduced, and reported in `changes`.
     """
-    lines = []
+    requested: dict[str, int] = {}
     for item in items:
-        product = get_product(item["slug"])
-        if product is None or product["stock"] == 0:
+        requested[item["slug"]] = requested.get(item["slug"], 0) + item["quantity"]
+
+    lines = []
+    changes = []
+    for slug, wanted in requested.items():
+        product = get_product(slug)
+        name = product["name"] if product else None
+        available = min(wanted, product["stock"]) if product else 0
+        if available < wanted:
+            reason = "unavailable" if not product else "sold_out" if not available else "reduced"
+            changes.append(
+                {
+                    "slug": slug,
+                    "name": name,
+                    "reason": reason,
+                    "requestedQuantity": wanted,
+                    "availableQuantity": available,
+                }
+            )
+        if not available:
             continue
-        quantity = min(item["quantity"], product["stock"])
         lines.append(
             {
                 "slug": product["slug"],
@@ -57,15 +84,17 @@ def build_quote(items: list[dict]) -> dict:
                 "categoryName": product["categoryName"],
                 "image": product["image"],
                 "imageAlt": product["imageAlt"],
-                "quantity": quantity,
-                "lineTotalCents": quantity * product["priceCents"],
+                "quantity": available,
+                "lineTotalCents": available * product["priceCents"],
             }
         )
     subtotal = sum(line["lineTotalCents"] for line in lines)
     shipping = 0 if subtotal == 0 or subtotal >= FREE_SHIPPING_FROM_CENTS else SHIPPING_CENTS
     return {
         "lines": lines,
+        "changes": changes,
         "subtotalCents": subtotal,
         "shippingCents": shipping,
         "totalCents": subtotal + shipping,
+        "fingerprint": _fingerprint(lines, shipping),
     }

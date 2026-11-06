@@ -17,7 +17,16 @@ useSeoMeta({
       <h1 class="mt-3 text-5xl font-semibold tracking-tight">
         {{ isNotFound ? 'We can’t find that page.' : 'Something went wrong.' }}
       </h1>
-      <button type="button" class="btn mt-8" @click="clearError({ redirect: '/products' })">Back to the shop</button>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <button v-if="!isNotFound" type="button" class="btn" @click="reloadNuxtApp({ force: true })">Try again</button>
+        <button
+          type="button"
+          :class="isNotFound ? 'btn' : 'btn-outline'"
+          @click="clearError({ redirect: '/products' })"
+        >
+          Back to the shop
+        </button>
+      </div>
     </div>
   </NuxtLayout>
 </template>

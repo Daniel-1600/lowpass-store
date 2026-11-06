@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help install dev build preview lint format format-check typecheck test-seo check images deploy deploy-prod clean
+.PHONY: help install dev build preview lint format format-check typecheck test test-backend test-frontend test-seo check images deploy deploy-prod clean
 
 help: ## Show this list of commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -33,10 +33,18 @@ format-check: ## Fail if any code isn't formatted
 typecheck: ## Type-check the frontend
 	npm run typecheck
 
+test: test-backend test-frontend ## Run all automated tests (run `make build` first)
+
+test-backend: ## Run the backend tests
+	uv run --directory backend pytest
+
+test-frontend: ## Run the browser tests against the production build (run `make build` first)
+	npm run test:e2e
+
 test-seo: ## Check the SEO of the production build (run `make build` first)
 	node scripts/with-backend.mjs sh scripts/test-seo.sh
 
-check: lint format-check typecheck build test-seo ## Run everything CI runs
+check: lint format-check typecheck test-backend build test-seo test-frontend ## Run everything CI runs
 
 images: ## Regenerate product artwork
 	npm run images
